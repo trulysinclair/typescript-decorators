@@ -1,17 +1,11 @@
-import "reflect-metadata";
 import { Container, inject, injectable } from "inversify";
-import { create } from "domain";
-
-// Define a decorator
-function MyDecorator(metadata: string) {
-  return function (target: any, propertyKey: string) {
-    Reflect.defineMetadata("my-decorator", metadata, target, propertyKey);
-  };
-}
+import "reflect-metadata";
 
 @injectable()
 class Service {
-  log() { console.log("log"); }
+  log() {
+    console.log("log");
+  }
 }
 
 export function createDecorator<T>(
@@ -28,7 +22,6 @@ class MyClass {
   private _service: Service;
 
   constructor() {
-
   }
 
   myMethod() {
@@ -40,10 +33,4 @@ const container = new Container();
 
 container.bind<Service>("Service").to(Service);
 container.bind<MyClass>(MyClass).to(MyClass);
-// Retrieve the metadata for the decorator
-// const metadata = Reflect.getMetadata("my-decorator", MyClass.prototype, "myMethod");
-// console.log(metadata); // "some metadata"
-
-// new MyClass().myMethod();
-
 container.get(MyClass).myMethod();
