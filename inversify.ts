@@ -1,12 +1,7 @@
-import { Container, inject, injectable } from "inversify";
 import "reflect-metadata";
+import { Container, inject, injectable } from "inversify";
 
-@injectable()
-class Service {
-  log() {
-    console.log("log");
-  }
-}
+const container = new Container();
 
 export function createDecorator<T>(
   identifier: string | symbol,
@@ -14,7 +9,32 @@ export function createDecorator<T>(
   return inject<T>(identifier);
 }
 
-const IService = createDecorator<Service>("Service");
+function registerService<T extends unknown>(service: new(...args: never[]) => T,
+  kind: "singleton" | "transient" | "request")
+{
+  switch (kind) {
+    case "singleton":
+      container.bind<T>(service.name).to(service).inSingletonScope();
+      break;
+    case "request":
+      container.bind<T>(service.name).to(service).inRequestScope();
+      break;
+    case "transient":
+      container.bind<T>(service.name).to(service);
+      break;
+  }
+}
+
+const IService = createDecorator<IService>("Service");
+
+interface IService {}
+
+@injectable()
+class Service {
+  log() {
+    console.log("log");
+  }
+}
 
 @injectable()
 class MyClass {
@@ -29,8 +49,25 @@ class MyClass {
   }
 }
 
-const container = new Container();
+@injectable()
+class MyClass2 {
+  @IService
+  private _service: Service;
 
-container.bind<Service>("Service").to(Service);
+  constructor() {
+  }
+
+  myMethod() {
+    this._service.log();
+  }
+}
+
+registerService(Service, "singleton");
+
+// container.bind<Service>("Service").to(Service);
+container.bind<MyClass2>(MyClass2).to(MyClass2);
 container.bind<MyClass>(MyClass).to(MyClass);
+container.get(MyClass2).myMethod();
 container.get(MyClass).myMethod();
+
+container.unbind(MyClass);
