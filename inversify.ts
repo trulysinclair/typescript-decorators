@@ -1,7 +1,6 @@
 import "reflect-metadata";
 import { Container, inject, injectable } from "inversify";
-
-const container = new Container();
+import container from "./container";
 
 export function createDecorator<T>(
   identifier: string | symbol,
